@@ -19,12 +19,24 @@ jobs:
         run: |
           ZIP_DATEI="$(find . -maxdepth 1 -type f -name '*.zip' | head -n 1)"
           test -n "$ZIP_DATEI"
+
           mkdir -p extracted
           unzip -q "$ZIP_DATEI" -d extracted
+
           SETTINGS_DATEI="$(find extracted -type f -name settings.gradle | head -n 1)"
           test -n "$SETTINGS_DATEI"
+
           PROJEKT_ORDNER="$(dirname "$SETTINGS_DATEI")"
           echo "PROJECT_DIR=$PROJEKT_ORDNER" >> "$GITHUB_ENV"
+
+      - name: Fehlerhafte XML-Attribute reparieren
+        shell: bash
+        run: |
+          sed -i -E 's/[[:space:]]+android:selected="[^"]*"//g' \
+            "$PROJECT_DIR/app/src/main/res/layout/activity_browser.xml" \
+            "$PROJECT_DIR/app/src/main/res/layout-land/activity_browser.xml"
+
+          echo "Ungültiges android:selected wurde entfernt."
 
       - name: Java 17 einrichten
         uses: actions/setup-java@v5
