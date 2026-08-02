@@ -1,48 +1,35 @@
-name: АДЕМИ ТВ - APK bauen
+name: ADEMI TV - APK bauen
 
 on:
-  workflow_dispatch:
   push:
-    branches:
-      - main
+    branches: [ main ]
 
 jobs:
   build:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Dateien laden
-        uses: actions/checkout@v4
+    - name: Code auschecken
+      uses: actions/checkout@v4
 
-      - name: Java 17 einrichten
-        uses: actions/setup-java@v4
-        with:
-          distribution: temurin
-          java-version: '17'
+    - name: Java JDK einrichten
+      uses: actions/setup-java@v4
+      with:
+        distribution: 'temurin'
+        java-version: '17'
 
-      - name: Android einrichten
-        uses: android-actions/setup-android@v3
+    - name: Android SDK einrichten
+      uses: android-actions/setup-android@v3
 
-      - name: Android-Pakete installieren
-        run: |
-          yes | sdkmanager --licenses >/dev/null || true
-          sdkmanager "platforms;android-34" "build-tools;34.0.0"
+    - name: Gradle Wrapper ausführbar machen
+      run: chmod +x gradlew
 
-      - name: Gradle einrichten
-        uses: gradle/actions/setup-gradle@v4
+    - name: APK Debug bauen
+      run: ./gradlew assembleDebug
 
-      - name: АДЕМИ ТВ bauen
-        run: |
-          chmod +x gradlew || true
-          ./gradlew assembleDebug --stacktrace
-
-      - name: APK vorbereiten
-        run: |
-          cp app/build/outputs/apk/debug/app-debug.apk ADEMI-TV.apk
-
-      - name: APK zum Download bereitstellen
-        uses: actions/upload-artifact@v4
-        with:
-          name: ADEMI-TV-APK
-          path: ADEMI-TV.apk
-          if-no-files-found: error
+    - name: APK-Artefakt hochladen
+      uses: actions/upload-artifact@v4
+      with:
+        name: app-debug
+        path: app/build/outputs/apk/debug/app-debug.apk
+        
